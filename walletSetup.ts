@@ -134,6 +134,9 @@ export async function initIdentityWallet(
     new Iden3SmtRhsCredentialStatusPublisher()
   );
 
+  credentialStatusPublisherRegistry.register(
+    CredentialStatusType.Iden3commRevocationStatusV1,
+  );
   return new IdentityWallet(kms, dataStorage, credentialWallet, {
     credentialStatusPublisherRegistry
   });
