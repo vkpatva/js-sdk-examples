@@ -1,9 +1,9 @@
 /* eslint-disable prefer-const */
 /* eslint-disable prettier/prettier */
-import { AuthDataPrepareFunc, AuthHandler, base64ToBytes, CircuitId, core, CredentialRequest, CredentialStatusType, DataPrepareHandlerFunc, EthStateStorage, FetchHandler, IdentityCreationOptions, IProofService, PackageManager, PlainPacker, ProofQuery, ProofService, StateVerificationFunc, VerificationHandlerFunc, W3CCredential, ZeroKnowledgeProofRequest, ZKPPacker } from "@0xpolygonid/js-sdk";
+import { AuthDataPrepareFunc, AuthHandler, base64ToBytes, CircuitId, core, CredentialRequest, CredentialStatusType, DataPrepareHandlerFunc, EthStateStorage, FetchHandler, IdentityCreationOptions, IProofService, PackageManager, PlainPacker, ProofService, StateVerificationFunc, VerificationHandlerFunc, W3CCredential, ZKPPacker } from "@0xpolygonid/js-sdk";
 import { initCircuitStorage, initInMemoryDataStorageAndWallets } from "./walletSetup";
 import axios from "axios";
-import { ProofData, proving, ZKProof } from "@iden3/js-jwz";
+import { proving, ZKProof } from "@iden3/js-jwz";
 import { Base64 } from "js-base64";
 const rhsUrl = process.env.RHS_URL as string;
 
@@ -25,7 +25,7 @@ export const defaultEthConnectionConfig = [{
     rpcResponseTimeout: 5000,
     waitReceiptCycleTime: 30000,
     waitBlockCycleTime: 3000,
-    chainId: 80001
+    chainId: 80002
 }];
 
 export const defaultIdentityCreationOptions: IdentityCreationOptions = {
@@ -94,7 +94,7 @@ const issueCredential = async () => {
     console.log("------------msgbytes-------------");
 
 
-    const msgBytes = await fetch(decodeURIComponent("https%3A%2F%2Fissuer5.zkred.tech%2Fv2%2Fqr-store%3Fid%3Db491d987-d5a5-4934-9d46-427fad87c7b5%26issuer%3Ddid%3Aiden3%3Apolygon%3Aamoy%3AxC3kP1H11c5EpKrmHXXKSEmkaeim3anmEq8nxcwMd"))
+    const msgBytes = await fetch(decodeURIComponent("https%3A%2F%2Fissuer.zkred.tech%2Fv2%2Fqr-store%3Fid%3Dcd65dd83-51ec-4f88-ac87-e4a70ec1cf67%26issuer%3Ddid%3Aiden3%3Apolygon%3Aamoy%3AxJAQoVCf7FpDV3akwmQMy5EULPVsbcnYEaCd37N2F"))
         .then(
             (res) => res.arrayBuffer()
         ).then(
@@ -103,7 +103,7 @@ const issueCredential = async () => {
 
     console.log(msgBytes)
 
-    const result = await approveMethod(msgBytes);
+    // const result = await approveMethod(msgBytes);
 
     let proofService = new ProofService(identityWallet, credentialWallet,
         circuitStorage, new EthStateStorage(defaultEthConnectionConfig[0]),
@@ -147,6 +147,58 @@ const issueCredential = async () => {
     console.log("creds", creds)
     console.log("\n\n\n\n\n")
 
+
+    //-----ISSUING SECOND CREDENTIAL----------
+
+
+    const msgBytes2 = await fetch(decodeURIComponent("https%3A%2F%2Fissuer.zkred.tech%2Fv2%2Fqr-store%3Fid%3D691935a6-500d-48e9-9a91-1e2063a20176%26issuer%3Ddid%3Aiden3%3Apolygon%3Aamoy%3AxJAQoVCf7FpDV3akwmQMy5EULPVsbcnYEaCd37N2F"))
+        .then(
+            (res) => res.arrayBuffer()
+        ).then(
+            (res) => new Uint8Array(res)
+        );
+
+
+    // const result2 = await approveMethod(msgBytes);
+
+
+
+    const authRes2 = await authHandler.handleAuthorizationRequest(userDID, msgBytes2);
+    console.log(authRes2)
+
+
+    const credentials2: W3CCredential[] | void = await axios
+        .post(`${authRes2.authRequest.body.callbackUrl}`, authRes2.token)
+        .then(async (response) => {
+            console.log("calling callback url")
+            console.log(JSON.stringify(response.data));
+            const newPayload = Base64.encode(JSON.stringify(response.data));
+
+            const newMsgBytes = base64ToBytes(newPayload);
+            console.log("newMsgBytes", newMsgBytes)
+            let fetchHandler = new FetchHandler(packageMgr);
+            const credentials = await fetchHandler.handleCredentialOffer(newMsgBytes);
+            return credentials;
+
+        })
+        .catch((error) => {
+            console.log("error")
+            console.log("error", error)
+        });
+    if (credentials2) {
+        await dataStorage.credential.saveAllCredentials([credentials2[0]]);
+    }
+
+    console.log("Credential 2 :  \\n\n\n\n", JSON.stringify(credentials2));
+    console.log("===================credential stored====================")
+    const creds2 = await credentialWallet.list();
+    console.log("creds", creds2)
+    console.log("\n\n\n\n\n")
+
+
+
+    /// proving credential
+
     const proofService2: IProofService = new ProofService(
         identityWallet,
         credentialWallet,
@@ -159,24 +211,33 @@ const issueCredential = async () => {
     console.log("verifying credential")
 
     const proofReq = {
-        circuitId: CircuitId.AtomicQuerySigV2,
-        optional: false,
-        id: 1732978620,
-        query: {
-
-            allowedIssuers: [
+        "circuitId": "credentialAtomicQuerySigV2",
+        "id": 1736664272,
+        "query": {
+            "allowedIssuers": [
                 "*"
             ],
-            context: "https://raw.githubusercontent.com/vkpatva/jsonschema/refs/heads/main/json-ld.json",
-            type: "coinvise",
-            credentialSubject: {
-                is_user: {}
+            "context": "https://raw.githubusercontent.com/vkpatva/jsonschema/refs/heads/main/testing-file.json",
+            "type": "testingschema",
+            "credentialSubject": {
+                "attribute.weight": {}
             }
         }
     }
+    const findCred: W3CCredential[] = await credentialWallet.findByQuery(proofReq.query);
+    console.log("findCred", findCred)
+    console.log("length of the credentials", findCred.length)
 
-    const proof = await proofService2.generateProof(proofReq, userDID, { skipRevocation: true });
-    console.log("proof", proof)
+    console.log("cred1 : \n\n\n\n", findCred[0])
+    console.log("cred2 : \n\n\n\n", findCred[1])
+    // if (findCred.length > 0) {
+    //     const revocationStatus = await credentialWallet.getRevocationStatusFromCredential(findCred[0]);
+    //     console.log("revocationStatus", revocationStatus)
+    // }
+
+    // ----------successful verification-------
+    const proof = await proofService2.generateProof(proofReq, userDID, { skipRevocation: true, credential: findCred[1] });
+    console.log("proof", JSON.stringify(proof))
     const sigProofOk = await proofService2.verifyProof(
         proof as unknown as ZKProof,
         CircuitId.AtomicQuerySigV2
@@ -287,9 +348,11 @@ async function main(choice: string) {
             break;
         case 'js-sdk': {
             await jsSdkCredential();
+            break;
         }
         default:
             await issueCredential();
+            break;
     }
 }
 
