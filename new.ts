@@ -94,106 +94,106 @@ const issueCredential = async () => {
     console.log("------------msgbytes-------------");
 
 
-    const msgBytes = await fetch(decodeURIComponent("https%3A%2F%2Fissuer.zkred.tech%2Fv2%2Fqr-store%3Fid%3Dcd65dd83-51ec-4f88-ac87-e4a70ec1cf67%26issuer%3Ddid%3Aiden3%3Apolygon%3Aamoy%3AxJAQoVCf7FpDV3akwmQMy5EULPVsbcnYEaCd37N2F"))
-        .then(
-            (res) => res.arrayBuffer()
-        ).then(
-            (res) => new Uint8Array(res)
-        );
+    // const msgBytes = await fetch(decodeURIComponent("https%3A%2F%2Fissuer.zkred.tech%2Fv2%2Fqr-store%3Fid%3Dcd65dd83-51ec-4f88-ac87-e4a70ec1cf67%26issuer%3Ddid%3Aiden3%3Apolygon%3Aamoy%3AxJAQoVCf7FpDV3akwmQMy5EULPVsbcnYEaCd37N2F"))
+    //     .then(
+    //         (res) => res.arrayBuffer()
+    //     ).then(
+    //         (res) => new Uint8Array(res)
+    //     );
 
-    console.log(msgBytes)
+    // console.log(msgBytes)
 
-    // const result = await approveMethod(msgBytes);
+    // // const result = await approveMethod(msgBytes);
 
-    let proofService = new ProofService(identityWallet, credentialWallet,
-        circuitStorage, new EthStateStorage(defaultEthConnectionConfig[0]),
-        { ipfsGatewayURL: "https://ipfs.io" });
+    // let proofService = new ProofService(identityWallet, credentialWallet,
+    //     circuitStorage, new EthStateStorage(defaultEthConnectionConfig[0]),
+    //     { ipfsGatewayURL: "https://ipfs.io" });
 
-    let packageMgr = await getPackageMgr(
-        await circuitStorage.loadCircuitData(CircuitId.AuthV2),
-        proofService.generateAuthV2Inputs.bind(proofService),
-        proofService.verifyState.bind(proofService)
-    );
-    const authHandler = new AuthHandler(packageMgr, proofService);
+    // let packageMgr = await getPackageMgr(
+    //     await circuitStorage.loadCircuitData(CircuitId.AuthV2),
+    //     proofService.generateAuthV2Inputs.bind(proofService),
+    //     proofService.verifyState.bind(proofService)
+    // );
+    // const authHandler = new AuthHandler(packageMgr, proofService);
 
-    const authRes = await authHandler.handleAuthorizationRequest(userDID, msgBytes);
-    console.log(authRes)
-    console.log(JSON.stringify(authRes));
+    // const authRes = await authHandler.handleAuthorizationRequest(userDID, msgBytes);
+    // console.log(authRes)
+    // console.log(JSON.stringify(authRes));
 
-    const credentials: W3CCredential[] | void = await axios
-        .post(`${authRes.authRequest.body.callbackUrl}`, authRes.token)
-        .then(async (response) => {
-            console.log("calling callback url")
-            console.log(JSON.stringify(response.data));
-            const newPayload = Base64.encode(JSON.stringify(response.data));
+    // const credentials: W3CCredential[] | void = await axios
+    //     .post(`${authRes.authRequest.body.callbackUrl}`, authRes.token)
+    //     .then(async (response) => {
+    //         console.log("calling callback url")
+    //         console.log(JSON.stringify(response.data));
+    //         const newPayload = Base64.encode(JSON.stringify(response.data));
 
-            const newMsgBytes = base64ToBytes(newPayload);
-            console.log("newMsgBytes", newMsgBytes)
-            let fetchHandler = new FetchHandler(packageMgr);
-            const credentials = await fetchHandler.handleCredentialOffer(newMsgBytes);
-            return credentials;
+    //         const newMsgBytes = base64ToBytes(newPayload);
+    //         console.log("newMsgBytes", newMsgBytes)
+    //         let fetchHandler = new FetchHandler(packageMgr);
+    //         const credentials = await fetchHandler.handleCredentialOffer(newMsgBytes);
+    //         return credentials;
 
-        })
-        .catch((error) => {
-            console.log("error")
-            console.log("error", error)
-        });
-    if (credentials) {
-        await dataStorage.credential.saveAllCredentials([credentials[0]]);
-    }
+    //     })
+    //     .catch((error) => {
+    //         console.log("error")
+    //         console.log("error", error)
+    //     });
+    // if (credentials) {
+    //     await dataStorage.credential.saveAllCredentials([credentials[0]]);
+    // }
 
-    console.log("===================credential stored====================")
-    const creds = await credentialWallet.list();
-    console.log("creds", creds)
-    console.log("\n\n\n\n\n")
-
-
-    //-----ISSUING SECOND CREDENTIAL----------
+    // console.log("===================credential stored====================")
+    // const creds = await credentialWallet.list();
+    // console.log("creds", creds)
+    // console.log("\n\n\n\n\n")
 
 
-    const msgBytes2 = await fetch(decodeURIComponent("https%3A%2F%2Fissuer.zkred.tech%2Fv2%2Fqr-store%3Fid%3D691935a6-500d-48e9-9a91-1e2063a20176%26issuer%3Ddid%3Aiden3%3Apolygon%3Aamoy%3AxJAQoVCf7FpDV3akwmQMy5EULPVsbcnYEaCd37N2F"))
-        .then(
-            (res) => res.arrayBuffer()
-        ).then(
-            (res) => new Uint8Array(res)
-        );
+    // //-----ISSUING SECOND CREDENTIAL----------
 
 
-    // const result2 = await approveMethod(msgBytes);
+    // const msgBytes2 = await fetch(decodeURIComponent("https%3A%2F%2Fissuer.zkred.tech%2Fv2%2Fqr-store%3Fid%3D691935a6-500d-48e9-9a91-1e2063a20176%26issuer%3Ddid%3Aiden3%3Apolygon%3Aamoy%3AxJAQoVCf7FpDV3akwmQMy5EULPVsbcnYEaCd37N2F"))
+    //     .then(
+    //         (res) => res.arrayBuffer()
+    //     ).then(
+    //         (res) => new Uint8Array(res)
+    //     );
+
+
+    // // const result2 = await approveMethod(msgBytes);
 
 
 
-    const authRes2 = await authHandler.handleAuthorizationRequest(userDID, msgBytes2);
-    console.log(authRes2)
+    // const authRes2 = await authHandler.handleAuthorizationRequest(userDID, msgBytes2);
+    // console.log(authRes2)
 
 
-    const credentials2: W3CCredential[] | void = await axios
-        .post(`${authRes2.authRequest.body.callbackUrl}`, authRes2.token)
-        .then(async (response) => {
-            console.log("calling callback url")
-            console.log(JSON.stringify(response.data));
-            const newPayload = Base64.encode(JSON.stringify(response.data));
+    // const credentials2: W3CCredential[] | void = await axios
+    //     .post(`${authRes2.authRequest.body.callbackUrl}`, authRes2.token)
+    //     .then(async (response) => {
+    //         console.log("calling callback url")
+    //         console.log(JSON.stringify(response.data));
+    //         const newPayload = Base64.encode(JSON.stringify(response.data));
 
-            const newMsgBytes = base64ToBytes(newPayload);
-            console.log("newMsgBytes", newMsgBytes)
-            let fetchHandler = new FetchHandler(packageMgr);
-            const credentials = await fetchHandler.handleCredentialOffer(newMsgBytes);
-            return credentials;
+    //         const newMsgBytes = base64ToBytes(newPayload);
+    //         console.log("newMsgBytes", newMsgBytes)
+    //         let fetchHandler = new FetchHandler(packageMgr);
+    //         const credentials = await fetchHandler.handleCredentialOffer(newMsgBytes);
+    //         return credentials;
 
-        })
-        .catch((error) => {
-            console.log("error")
-            console.log("error", error)
-        });
-    if (credentials2) {
-        await dataStorage.credential.saveAllCredentials([credentials2[0]]);
-    }
+    //     })
+    //     .catch((error) => {
+    //         console.log("error")
+    //         console.log("error", error)
+    //     });
+    // if (credentials2) {
+    //     await dataStorage.credential.saveAllCredentials([credentials2[0]]);
+    // }
 
-    console.log("Credential 2 :  \\n\n\n\n", JSON.stringify(credentials2));
-    console.log("===================credential stored====================")
-    const creds2 = await credentialWallet.list();
-    console.log("creds", creds2)
-    console.log("\n\n\n\n\n")
+    // console.log("Credential 2 :  \\n\n\n\n", JSON.stringify(credentials2));
+    // console.log("===================credential stored====================")
+    // const creds2 = await credentialWallet.list();
+    // console.log("creds", creds2)
+    // console.log("\n\n\n\n\n")
 
 
 
@@ -208,36 +208,38 @@ const issueCredential = async () => {
 
 
 
-    console.log("verifying credential")
+    // console.log("verifying credential")
 
-    const proofReq = {
-        "circuitId": "credentialAtomicQuerySigV2",
-        "id": 1736664272,
-        "query": {
-            "allowedIssuers": [
-                "*"
-            ],
-            "context": "https://raw.githubusercontent.com/vkpatva/jsonschema/refs/heads/main/testing-file.json",
-            "type": "testingschema",
-            "credentialSubject": {
-                "attribute.weight": {}
-            }
-        }
-    }
-    const findCred: W3CCredential[] = await credentialWallet.findByQuery(proofReq.query);
-    console.log("findCred", findCred)
-    console.log("length of the credentials", findCred.length)
+    // const proofReq = {
+    //     "circuitId": "credentialAtomicQuerySigV2",
+    //     "id": 1736664272,
+    //     "query": {
+    //         "allowedIssuers": [
+    //             "*"
+    //         ],
+    //         "context": "https://raw.githubusercontent.com/vkpatva/jsonschema/refs/heads/main/testing-file.json",
+    //         "type": "testingschema",
+    //         "credentialSubject": {
+    //             "attribute.weight": {}
+    //         }
+    //     }
+    // }
+    // const findCred: W3CCredential[] = await credentialWallet.findByQuery(proofReq.query);
+    // console.log("findCred", findCred)
+    // console.log("length of the credentials", findCred.length)
 
-    console.log("cred1 : \n\n\n\n", findCred[0])
-    console.log("cred2 : \n\n\n\n", findCred[1])
+    // console.log("cred1 : \n\n\n\n", findCred[0])
+    // console.log("cred2 : \n\n\n\n", findCred[1])
     // if (findCred.length > 0) {
     //     const revocationStatus = await credentialWallet.getRevocationStatusFromCredential(findCred[0]);
     //     console.log("revocationStatus", revocationStatus)
     // }
 
     // ----------successful verification-------
-    const proof = await proofService2.generateProof(proofReq, userDID, { skipRevocation: true, credential: findCred[1] });
-    console.log("proof", JSON.stringify(proof))
+    // const proof = await proofService2.generateProof(proofReq, userDID, { skipRevocation: true, credential: findCred[1] });
+    // console.log("proof", JSON.stringify(proof))
+
+    const proof = { "id": 1737103901, "circuitId": "credentialAtomicQuerySigV2", "proof": { "pi_a": ["7753757663693572813314186228009634312947083487413998009342428674388472209408", "17885455323958167585272753242043129941390897333180274628055462444083806034641", "1"], "pi_b": [["20652455151828609556053718110954014885391537234150237142441250512052290151420", "3836016131759169381692883753621363157721254462502282452873499166525214065072"], ["1535724877851854112935245041264281393539419294066174115053131524802349225463", "14376918514235931981732031163735753408128641326098452485138681993274929187843"], ["1", "0"]], "pi_c": ["9684944207762810229145168784374010495599714088169091588876026663609305253739", "9582013793453849139112166794738082847972650784156080358878718934711352060100", "1"], "protocol": "groth16" }, "pub_signals": ["1", "23349790305395415308645893478508627717755802615400038534898729198191317761", "5940228189662180388941582307130471664071836093179686380207442629854858212697", "1737103901", "21340553769467552806739236547301420065997532869711745005630436968511181569", "0", "21697020259584286631158728378529449796249596621015956869408030342593052143650", "1737103930", "153923982489532153299371786123663592885", "0", "4792130079462681165428511201253235850015648352883240577315026477780493110675", "0", "1", "10656670712789185448149774401919386926059264501540007353959018271874703607999", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0"] }
     const sigProofOk = await proofService2.verifyProof(
         proof as unknown as ZKProof,
         CircuitId.AtomicQuerySigV2
